@@ -1,0 +1,30 @@
+substitutions:
+  _REGION: asia-south1
+  _REPO: apps
+  _IMAGE: sample-app
+
+steps:
+  - name: 'python:3.12-slim'
+    id: 'test'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        set -euo pipefail
+        pip install --quiet -r requirements.txt
+        python -c "import app; print('import OK')"
+        echo "tests passed"
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_IMAGE}:$BUILD_ID'
+      - '.'
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_IMAGE}:$BUILD_ID'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
